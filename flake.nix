@@ -64,12 +64,9 @@
               hyperfine \
                 --warmup 0 \
                 --runs 5 \
-                --export-markdown "$TMPBASE/busted-cold.md" \
                 --prepare "rm -rf $TMPBASE/lux"   "lx --tree $TMPBASE/lux install busted" \
                 --prepare "rm -rf $TMPBASE/lde"   "lde  --tree $TMPBASE/lde   install rocks:busted" \
                 --prepare "rm -rf $TMPBASE/rocks" "luarocks --tree $TMPBASE/rocks install busted RT_DIR=${pkgs.libc.out}"
-
-              cat "$TMPBASE/busted-cold.md"
             '';
           };
 
@@ -87,12 +84,9 @@
               hyperfine \
                 --warmup 2 \
                 --runs 10 \
-                --export-markdown "$TMPBASE/busted-warm.md" \
                 "lx       --tree $TMPBASE/lux --no-prompt install busted" \
                 "lde      --tree $TMPBASE/lde             install rocks:busted" \
                 "luarocks --tree $TMPBASE/rocks           install busted RT_DIR=${pkgs.libc.out}"
-
-              cat "$TMPBASE/busted-warm.md"
             '';
           };
 
@@ -106,12 +100,9 @@
               hyperfine \
                 --warmup 0 \
                 --runs 5 \
-                --export-markdown "$TMPBASE/lfs.md" \
                 --prepare "rm -rf $TMPBASE/lux"   "lx       --tree $TMPBASE/lux   install luafilesystem" \
                 --prepare "rm -rf $TMPBASE/lde"   "lde      --tree $TMPBASE/lde   install rocks:luafilesystem" \
                 --prepare "rm -rf $TMPBASE/rocks" "luarocks --tree $TMPBASE/rocks install luafilesystem RT_DIR=${pkgs.libc.out}"
-
-              cat "$TMPBASE/lfs.md"
             '';
           };
 
