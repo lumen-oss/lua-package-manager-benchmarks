@@ -1,0 +1,47 @@
+---
+on:
+  pull_request:
+    types: [opened, ready_for_review, reopened, synchronize]
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+name: Benchmarks
+
+jobs:
+  bench:
+    permissions:
+      contents: read
+      pull-requests: read
+    if: github.event.pull_request.draft == false
+    strategy:
+      matrix:
+        os: ["ubuntu-24.04", "macos-14"]
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+
+      - name: Setup cachix
+        uses: cachix/cachix-action@v17
+        with:
+          name: neorocks
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+
+      - name: devShell
+        uses: nicknovitski/nix-develop@v1.2.1
+
+      - name: busted (cold)
+        run: busted-cold
+
+      - name: busted (warm)
+        run: busted-warm
+
+      - name: luafilesystem (cold)
+        run: lfs-build
