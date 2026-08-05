@@ -1,0 +1,39 @@
+---
+on:
+  pull_request:
+    types: [opened, ready_for_review, reopened, synchronize]
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+name: Benchmarks
+
+jobs:
+  bench:
+    permissions:
+      contents: read
+      pull-requests: read
+    if: github.event.pull_request.draft == false
+    strategy:
+      matrix:
+        os: "ubuntu-24.04"
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install Lua
+        uses: luarocks/gh-actions-lua@v13
+        with:
+          luaVersion: "5.1.5"
+
+      - name: Install Lux
+        uses: lumen-oss/gh-actions-lux@v1
+        with:
+          version: 0.40.1
+
+      - name: Lux test run
+        run: lx install busted
