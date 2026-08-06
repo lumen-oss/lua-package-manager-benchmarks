@@ -10,14 +10,14 @@ on:
 name: Benchmarks
 
 jobs:
-  non-nix:
+  non-nix-run:
     permissions:
       contents: read
       pull-requests: read
     if: github.event.pull_request.draft == false
     strategy:
       matrix:
-        os: "ubuntu-24.04"
+        os: ["ubuntu-24.04"]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -25,15 +25,32 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Install Lua
-        uses: luarocks/gh-actions-lua@v13
-        with:
-          luaVersion: "5.1.5"
+      - name: Install Lua, etc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y liblua5.1-0-dev pkg-config
 
       - name: Install Lux
         uses: lumen-oss/gh-actions-lux@v1
         with:
           version: 0.40.1
 
+      - name: Install hyperfine
+        uses: taiki-e/install-action@hyperfine
+
       - name: Lux test run
-        run: lx install busted
+        run: |
+          lx config show
+          lx debug toolchains
+        env:
+          RUST_LOG: trace
+
+      - name: Run hyperfine
+        run: |
+          TMPBASE=$(mktemp -d)
+          trap 'rm -rf "$TMPBASE"' EXIT
+
+          hyperfine \
+            --warmup 1 \
+            --runs 10 \
+            --prepare "rm -rf $TMPBASE/lux" "lx --tree $TMPBASE/lux install busted"
